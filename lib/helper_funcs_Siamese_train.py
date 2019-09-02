@@ -12,7 +12,12 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset
 from sklearn.neighbors import KNeighborsClassifier
 import os
+os.chdir('//ece-azare-nas1.ad.ufl.edu/ece-azare-nas/Profile/hdysheng/Documents/GitHub/SiameseNetwork')
+
 from sklearn.linear_model import LinearRegression
+import pickle
+import lib.tools as tools
+from torch.nn.utils import clip_grad_norm_
 import pdb
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -28,7 +33,7 @@ parameters = {
     'end_dim': 30,
     'normalization': 0,
     'train_batch_size': 128, # 16, 3, 13
-    'valid_batch_size': 64
+    'valid_batch_size': 64,
     'train_num_epochs': 500,
     'margin': 1.0,
     'thres_dist': 0.5,
@@ -53,16 +58,16 @@ def run_classifier(classifier, k, outputs, labels, parameters, save_name, idx_fo
     savepath_fold = parameters['savepath']  + '/fold' + str(idx_fold)
     classifier, predicted, accuracy, prob = knn_on_output(k, outputs, labels, classifier, savepath_fold, save_name)
     pickle.dump(classifier, open(os.path.join(savepath_fold, 'classifier_'+str(idx_fold) + '.pkl'), 'wb'))
-    labels_ = [parameters['grass_names'][i] for i in labels_train]
+    labels_ = [parameters['grass_names'][i] for i in labels]
     tools.plot_confu(labels_, predicted, savepath_fold, 'knn_training') 
     tools.ROC_classifier(parameters['name_class'], parameters['grass_names'], labels, prob, savepath_fold, 'knn_training')
     return classifier
 
-def evaluate(d_loader, loss_temp, accu_temp, model):
+def evaluate(d_loader, loss_temp, accu_temp, model, criterion, optimizer):
     for idx_batch, (x0, x1, validlabels) in enumerate(d_loader):
         validlabels = validlabels.float()
         if torch.cuda.is_available():
-            validlabels = valilabels.to(device)            
+            validlabels = validlabels.to(device)            
             x0 = x0.to(device)
             x1 = x1.to(device)            
         outputs0, outputs1 = model(x0, x1)
@@ -74,12 +79,12 @@ def evaluate(d_loader, loss_temp, accu_temp, model):
     return loss_epoch, accu_epoch
 
 
-def train(model, parameters, train_loader, valid_loader, loss_all, accu_all, early_stopping):
+def train(model, criterion, optimizer, parameters, train_loader, valid_loader, loss_all, accu_all, early_stopping):
     for idx_epoch in range(0, parameters['train_num_epochs']):
         model.train()
         # loss_temp and accu_temp: loss and accuracy recorded for every epoch
-        loss_temp{'train': [], 'valid':[]}
-        accu_temp{'train': [], 'valid': []}
+        loss_temp = {'train': [], 'valid':[]}
+        accu_temp = {'train': [], 'valid': []}
 
         for idx_batch, (x0, x1, trainlabel) in enumerate(train_loader):
             trainlabel = trainlabel.float()
@@ -114,7 +119,7 @@ def train(model, parameters, train_loader, valid_loader, loss_all, accu_all, ear
         # validation
         with torch.no_grad():
             loss_temp['valid'], accu_temp['valid'] = evaluate(valid_loader, loss_temp['valid'], accu_temp['valid'])
-            loss_epoch_valid, accu_epoch_valid = np.average(loss_temp_valid), np.average(accu_temp_valid)
+            loss_epoch_valid, accu_epoch_valid = np.average(loss_temp['valid']), np.average(accu_temp['valid'])
             loss_all['valid'].append(loss_epoch_valid)
             accu_all['valid'].append(accu_epoch_valid)
 

@@ -8,7 +8,7 @@ Reference:
 """
 import torch
 import os
-os.chdir('//ece-azare-nas1.ad.ufl.edu/ece-azare-nas/Profile/hdysheng/Documents/Python Scripts/DOEdrone/Siamese/SiameseUpdated/final_codeGPU')
+os.chdir('//ece-azare-nas1.ad.ufl.edu/ece-azare-nas/Profile/hdysheng/Documents/GitHub/SiameseNetwork')
 #import random
 import numpy as np
 from torch.utils.data import DataLoader
@@ -18,12 +18,11 @@ import scipy.io as sio
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import pickle
-from sklearn.metrics import roc_curve, auc
+#from sklearn.metrics import roc_curve, auc
 # from lib.tools import EarlyStopping
 import lib.tools as tools
 import random
 from imblearn.over_sampling import SMOTE
-from torch.nn.utils import clip_grad_norm_
 import pandas as pd
 import pdb
 
@@ -163,10 +162,10 @@ while all(l>0 for l in len_all) & count_all<10:
 	valid_loader0 = DataLoader(valid_iter0, batch_size = paras['train_batch_size'], shuffle = False, num_workers = 0)
 
 	# loss after each epoch
-	loss_all{'train':[], 'valid': []}
-	accu_all{'train': [], 'valid': []}
+	loss_all = {'train':[], 'valid': []}
+	accu_all= {'train': [], 'valid': []}
 
-	model, loss_all, accu_all = trainlib.train(model, paras, train_loader, valid_loader, loss_all, accu_all, early_stopping)
+	model, loss_all, accu_all = trainlib.train(model, criterion, optimizer, paras, train_loader, valid_loader, loss_all, accu_all, early_stopping)
 
 	## learning curve
 	minposs   = loss_all['valid'].index(min(loss_all['valid'])) + 1
@@ -176,7 +175,7 @@ while all(l>0 for l in len_all) & count_all<10:
 	for (idx, tv) in enumerate(['train', 'valid']):
 		lb = list_label[idx]
 		axs[0].plot(range(1, len(loss_all[tv])+1), loss_all[tv])
-		axs[1].plot(range(1, len(accu_all[tv])+1), accu_all[tv]， label = lb)
+		axs[1].plot(range(1, len(accu_all[tv])+1), accu_all[tv], label = lb)
 	axs[0].axvline(minposs, linestyle = '--', color = 'r', label = 'Early Stopping Checkpoint')
 	axs[1].legend(loc = 'best')
 	axs[0].set_title('loss history')
@@ -193,12 +192,12 @@ while all(l>0 for l in len_all) & count_all<10:
 	test_iter   = trainlib.create_iterator(X_test, y_test, paras['name_class'])
 	test_loader = DataLoader(test_iter, batch_size = paras['train_batch_size'], shuffle = True, num_workers = 0)
 	test_loss_temp = []
-	test_accu_Temp = []
+	test_accu_temp = []
 	with torch.no_grad():    
-		_, test_accu = evaluate(test_loader, test_loss_temp, test_accu_temp, model)
+		_, test_accu = trainlib.evaluate(test_loader, test_loss_temp, test_accu_temp, model, criterion, optimizer)
 
 		print('=========================================================')
-		print('Test accuracy {}\n'.format(test_loss))
+		print('Test accuracy {}\n'.format(test_accu))
     
 	## make a transformation on the whole dataset
 	train_iter_all   = trainlib.create_iterator_single(X_train, y_train)
@@ -209,15 +208,15 @@ while all(l>0 for l in len_all) & count_all<10:
 	test_loader_all  = DataLoader(test_iter_all, batch_size = paras['train_batch_size'], shuffle = False, num_workers = 0)
 
 	with torch.no_grad():
-		outputs_train, labels_train = tools.evaluate_single(train_loader_all)
-		outputs_valid, labels_valid = tools.evaluate_single(valid_loader_all)
-		outputs_test, labels_test   = tools.evaluate_single(test_loader_all)
+		outputs_train, labels_train = tools.evaluate_single(train_loader_all, model)
+		outputs_valid, labels_valid = tools.evaluate_single(valid_loader_all, model)
+		outputs_test, labels_test   = tools.evaluate_single(test_loader_all, model)
 
 	    ## train a knn classifier on train data
 	classifier = None
-	classifier = run_classifier(classifier, 5, outputs_train, labels_train, paras, 'knn_train', idx_fold)
-	_          = run_classifier(classifier, 5, outputs_valid, labels_valid, paras, 'knn_valid', idx_fold)
-	_          = run_classifier(classifier, 5, outputs_test, labels_test, paras, 'knn_test', idx_fold)
+	classifier = trainlib.run_classifier(classifier, 5, outputs_train, labels_train, paras, 'knn_train', idx_fold)
+	_          = trainlib.run_classifier(classifier, 5, outputs_valid, labels_valid, paras, 'knn_valid', idx_fold)
+	_          = trainlib.run_classifier(classifier, 5, outputs_test, labels_test, paras, 'knn_test', idx_fold)
 
 	# classifier, predicted_vali0, accuracy_vali0, prob_vali0 = trainlib.knn_on_output(5, outputs_vali0, labels_vali0.ravel(), classifier, savepath_fold, 'knn_valiROC_accuracy')
 	# labels_vali0_ = [parameters['grass_names'][i] for i in labels_vali0]

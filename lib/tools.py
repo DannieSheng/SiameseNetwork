@@ -42,7 +42,7 @@ def compute_accuracy(y_true, y_pred, thres):
 #    plt.savefig(os.path.join(parameters['savepath'], 'scatter_' + name_title+'.jpg'))
 #    plt.show() 
 
-def evaluate_single(d_loader):
+def evaluate_single(d_loader, model):
     outputs_all = []
     labels_all  = []
     for idx_batch, (inputs, labels) in enumerate(d_loader):        
