@@ -125,11 +125,11 @@ def train(model, criterion, optimizer, parameters, train_loader, valid_loader, l
             accu_all['valid'].append(accu_epoch_valid)
 
             # early-stopping
-            # if idx_epoch >= 180:
-            early_stopping(idx_epoch, loss_epoch_valid, model, parameters['end_dim'])
-            if early_stopping.early_stop:
-                print("Early stopping at epoch " + str(idx_epoch))
-                break
+            if idx_epoch >= 180:
+                early_stopping(idx_epoch, loss_epoch_valid, model, parameters['end_dim'])
+                if early_stopping.early_stop:
+                    print("Early stopping at epoch " + str(idx_epoch))
+                    break
 
     # load the last checkpoint with the best model
     model.load_state_dict(torch.load('./' + str(parameters['end_dim'])+'/checkpoint.pt'))
@@ -381,7 +381,7 @@ class EarlyStopping:
         if self.count < self.patience:
             self.y[self.count] = val_loss
             self.count += 1
-            self.save_checkpoint(epoch, val_loss, model, end_dim)
+#            self.save_checkpoint(epoch, val_loss, model, end_dim)
             self.early_stop = False
         else:
             pdb.set_trace()
@@ -395,6 +395,7 @@ class EarlyStopping:
                 self.early_stop = False
                 self.save_checkpoint(epoch, val_loss, model, end_dim)
                 self.count = 0
+            
 
     def save_checkpoint(self, epoch, val_loss, model, end_dim):
         '''Saves model when validation loss decrease.'''
@@ -404,7 +405,7 @@ class EarlyStopping:
         if not os.path.exists('./' + str(end_dim)):
             os.makedirs('./' + str(end_dim))
         torch.save(model.state_dict(), './' + str(end_dim)+'/checkpoint.pt')
-#        self.score = val_loss
+
     
 #def slope(x1, y1, x2, y2):
 #    m = 0
