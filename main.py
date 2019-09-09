@@ -107,7 +107,7 @@ while all(l>0 for l in len_all) & count_all<10:
 
 	    ## train-test split
 	X_train_all, X_test, y_train_all, y_test, idx_train, idx_test = train_test_split(spectra, gt, range(0, len(gt)), test_size = 0.1, random_state = 0)
-    
+#	pdb.set_trace()
 	    ## train-validation split
 	X_train, X_valid, y_train, y_valid = train_test_split(X_train_all, y_train_all, test_size = 0.11, random_state = 0)
 

@@ -23,7 +23,7 @@ import pdb
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 parameters = {
-    'exp': '2',     
+    'exp': '3',     
     'hyperpath': r'T:\Results\AnalysisDroneData\dataPerClass\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06',
     'flagpath': r'T:\Results\AnalysisDroneData\ReflectanceCube\MATdataCube\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06',
     'flagname': 'flagGoodWvlen.mat',
@@ -58,8 +58,9 @@ def run_classifier(classifier, k, outputs, labels, parameters, save_name, idx_fo
     savepath_fold = parameters['savepath']  + '/fold' + str(idx_fold)
     classifier, predicted, accuracy, prob = knn_on_output(k, outputs, labels, classifier, savepath_fold, save_name)
     pickle.dump(classifier, open(os.path.join(savepath_fold, 'classifier_'+str(idx_fold) + '.pkl'), 'wb'))
-    labels_ = [parameters['grass_names'][i] for i in labels]
-    tools.plot_confu(labels_, predicted, savepath_fold, 'knn_training') 
+    labels_ = [parameters['grass_names'][int(i-1)] for i in labels]
+    predicted_ = [parameters['grass_names'][int(i-1)] for i in predicted]
+    tools.plot_confu(labels_, predicted_, savepath_fold, 'knn_training') 
     tools.ROC_classifier(parameters['name_class'], parameters['grass_names'], labels, prob, savepath_fold, 'knn_training')
     return classifier
 
@@ -118,7 +119,7 @@ def train(model, criterion, optimizer, parameters, train_loader, valid_loader, l
 
         # validation
         with torch.no_grad():
-            loss_temp['valid'], accu_temp['valid'] = evaluate(valid_loader, loss_temp['valid'], accu_temp['valid'])
+            loss_temp['valid'], accu_temp['valid'] = evaluate(valid_loader, loss_temp['valid'], accu_temp['valid'], model, criterion, optimizer)
             loss_epoch_valid, accu_epoch_valid = np.average(loss_temp['valid']), np.average(accu_temp['valid'])
             loss_all['valid'].append(loss_epoch_valid)
             accu_all['valid'].append(accu_epoch_valid)
@@ -383,6 +384,7 @@ class EarlyStopping:
             self.save_checkpoint(epoch, val_loss, model, end_dim)
             self.early_stop = False
         else:
+            pdb.set_trace()
             regressor = LinearRegression()  
             regressor.fit(np.reshape(self.x, (-1,1)), self.y)
             self.score = regressor.coef_

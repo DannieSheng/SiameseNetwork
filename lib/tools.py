@@ -15,6 +15,7 @@ from itertools import cycle
 from sklearn.preprocessing import label_binarize
 from sklearn.metrics import roc_curve, auc
 import torch
+import pdb
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     ## function to compute the accuracy
@@ -43,18 +44,25 @@ def compute_accuracy(y_true, y_pred, thres):
 #    plt.show() 
 
 def evaluate_single(d_loader, model):
-    outputs_all = []
-    labels_all  = []
+#    outputs_all = []
+#    labels_all  = []
     for idx_batch, (inputs, labels) in enumerate(d_loader):        
         labels  = labels.float()
         if torch.cuda.is_available():
-            labels = labels.to(device)
-            inputs = inputs.to(device)
+            labels  = labels.to(device)
+            inputs  = inputs.to(device)
             outputs = model.forward_once(inputs).detach().cpu().numpy()
         else:
             outputs = model.forward_once(inputs)
-        labels_all.append(labels)
-        outputs_all.append(outputs)
+            labels  = labels.detach().numpy()
+            outputs = outputs.detach().numpy()
+        try:
+            labels_all  = np.concatenate((labels_all, labels), axis = 0)
+            outputs_all = np.concatenate((outputs_all, outputs), axis = 0)
+        except:
+            labels_all  = labels
+            outputs_all = outputs
+
     return outputs_all, labels_all
 
 def plot_confu(labels, predicted, path_result, filename):
