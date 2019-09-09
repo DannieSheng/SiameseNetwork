@@ -58,6 +58,11 @@ patience = 30
 idx_fold  = 0
 count_all = 0
 while all(l>0 for l in len_all) & count_all<10:
+
+	savepath_fold =  paras['savepath']  + '/fold' + str(idx_fold)
+
+	if not os.path.exists(savepath_fold):
+		os.makedirs(savepath_fold)     
     
 	early_stopping = trainlib.EarlyStopping(patience=patience, verbose=True)
     
@@ -93,10 +98,7 @@ while all(l>0 for l in len_all) & count_all<10:
 
 	paras['num_class']  = len(np.unique(gt))
 	paras['inputsize']  = np.shape(spectra)[1]
-	savepath_fold =  paras['savepath']  + '/fold' + str(idx_fold)
 
-	if not os.path.exists(savepath_fold):
-		os.makedirs(savepath_fold)     
     
 	print('Data loading done!!')
 
@@ -138,6 +140,12 @@ while all(l>0 for l in len_all) & count_all<10:
 		X_train, y_train = sm.fit_sample(X_train, y_train)
 	else:
 		print('All classes have greater than 100000 samples!')
+	all_data = {'X_train': X_train,
+				'y_train': y_train,
+				'X_valid': X_valid,
+				'y_valid': y_valid,
+				'X_test': X_test,
+				'y_test': y_test}
 
 ################### model definition#################
 	model = trainlib.SiameseNetwork(paras['inputsize'], paras['end_dim'])	

@@ -23,7 +23,7 @@ import pdb
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 parameters = {
-    'exp': '3',     
+    'exp': '4',     
     'hyperpath': r'T:\Results\AnalysisDroneData\dataPerClass\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06',
     'flagpath': r'T:\Results\AnalysisDroneData\ReflectanceCube\MATdataCube\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06',
     'flagname': 'flagGoodWvlen.mat',
