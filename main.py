@@ -53,12 +53,14 @@ wavelength       = flag['wavelength']
 
     # patience for early stopping
 patience = 30
-early_stopping = trainlib.EarlyStopping(patience=patience, verbose=True)
 
 	# fold for cross validation
 idx_fold  = 0
 count_all = 0
 while all(l>0 for l in len_all) & count_all<10:
+    
+	early_stopping = trainlib.EarlyStopping(patience=patience, verbose=True)
+    
 	count_all += 1
 	len_all = []
 
