@@ -59,6 +59,14 @@ wavelength       = flag['wavelength']
 idx_fold  = 0
 count_all = 0
 while all(l>0 for l in len_all): #& count_all<10:
+    try:
+        del spectra
+    except:
+        pass
+    try:
+        del gt
+    except:
+        pass
     savepath_fold      =  paras['savepath']  + r'\fold' + str(idx_fold)
     savepath_data_fold = paras['savepath_data']  + r'\fold' + str(idx_fold)
     if not os.path.exists(savepath_fold):
@@ -72,7 +80,7 @@ while all(l>0 for l in len_all): #& count_all<10:
     if not os.path.exists(os.path.join(savepath_data_fold, 'data.pkl')):
         paras['selected_file'] = []
         for idx, classn in enumerate(paras['name_class']):
-            pdb.set_trace()
+#            pdb.set_trace()
             list_file = list_file_all[str(classn)]
             if idx >0:
                 list_file = list(set(list_file)-set(paras['selected_file'])) # if file has been selected before, regard the file for this time 
@@ -101,25 +109,51 @@ while all(l>0 for l in len_all): #& count_all<10:
 #                    else:
 #                        spectra = np.concatenate((spectra, spectra_class), axis = 0)
 #                        gt      = np.concatenate((gt, label_class), axis = 0)	
-                try:
-                    spectra_all[str(classn)] = np.concatenate((spectra_all[str(classn)], spectra_class), axis = 0) 
-                    label_all[str(classn)]   = np.concatenate((label_all[str(classn)], label_class), axis = 0) 
-                except:
-                    spectra_all[str(classn)] = spectra_class
-                    label_all[str(classn)] = label_class  
+                    try:
+                        spectra_all[str(classn)] = np.concatenate((spectra_all[str(classn)], spectra_class), axis = 0) 
+                        label_all[str(classn)]   = np.concatenate((label_all[str(classn)], label_class), axis = 0) 
+                    except:
+                        spectra_all[str(classn)] = spectra_class
+                        label_all[str(classn)] = label_class 
 
         paras['num_class'] = len(spectra_all)
-        paras['inputsize'] = np.shape(spectra_class)[1]
-        pdb.set_trace()
-
+        paras['inputsize'] = np.shape(spectra_class)[1]        
         print('Data loading done!!')
-        pdb.set_trace()
-            # save parameters in a txt file and a pickle file 
+        
+                    # save parameters in a txt file and a pickle file 
         with open(os.path.join(savepath_fold, 'parameters.txt'), 'w') as f:
             for key, value in paras.items():
                 f.write(key + ': ' + str(value) + '\n')
         f.close()
         pickle.dump(paras, open(os.path.join(savepath_fold, 'parameters.pkl'), 'wb'))
+        
+        # if class numbers greater than 150000, reduce to 150000
+        for idx_c, classn in enumerate(paras['name_class']):
+            num_sample = len(label_all[str(classn)])
+#            pdb.set_trace()
+            if num_sample > 150000:
+                selected_id = np.array(random.sample(list(np.arange(0, num_sample)), 150000))
+                selected_X  = spectra_all[str(classn)][selected_id,:]
+                selected_y  = label_all[str(classn)][selected_id]
+            else:
+                selected_X = spectra_all[str(classn)]
+                selected_y  = label_all[str(classn)]
+            try:
+                spectra = np.concatenate((spectra, selected_X), axis = 0) 
+                gt      = np.concatenate((gt, selected_y), axis = 0)	
+            except:
+                spectra = selected_X
+                gt      = selected_y
+        print('Downsampled those with more than 150000 samples!\n')  
+        
+        # if there is one class with number smaller than 100000, upsampling
+        v, count = np.unique(gt, return_counts = True)          
+        if len(np.where(count < 150000)[0])>0:
+            sm = SMOTE(sampling_strategy = 'not majority', random_state = 2, n_jobs = 16)
+            print('Oversampled those longer than 150000!\n')               
+            X_train, y_train = sm.fit_sample(spectra, gt)
+        else:
+            print('All classes have greater than 150000 samples!')
 
             ## train-test split
         X_train_all, X_test, y_train_all, y_test, idx_train, idx_test = train_test_split(spectra, gt, range(0, len(gt)), test_size = 0.1, random_state = 0)
@@ -128,30 +162,9 @@ while all(l>0 for l in len_all): #& count_all<10:
         X_train, X_valid, y_train, y_valid = train_test_split(X_train_all, y_train_all, test_size = 0.11, random_state = 0)
 
         # if there is one class with number smaller than 100000, upsampling
-        # if all class numbers greater than 150000, reduce to 100000 (not finished)
-        v, count = np.unique(y_train, return_counts = True)  
-        if len(np.where(count > 100000)[0]) > 0:
-#            print('Downsampled those longer than 100000!\n')   
-            for idx in np.where(count > 100000)[0]:
-            #        idx = random.choice(np.where(count > 100000)[0])
-                index = np.where(y_train == v[idx])[0]
-                selected_id = np.array(random.sample(list(index), 100000))
-                selected_X  = X_train[selected_id,:]
-                selected_y  = y_train[selected_id]
-                X_train = np.delete(X_train, index, axis = 0)
-                y_train = np.delete(y_train, index)
-                X_train = np.concatenate((X_train, selected_X), axis = 0)
-                y_train = np.concatenate((y_train, selected_y), axis = 0)
-            print('Downsampled those longer than 100000!\n')           
-        if len(np.where(count < 100000)[0])>0:
-            if len(np.where(count < 100000)[0])==2:  
-                sm = SMOTE(random_state = 2, n_jobs = 16)
-            else:
-                sm = SMOTE(sampling_strategy = 'minority', random_state = 2, n_jobs = 16)
-            print('Oversampled those longer than 100000!\n')               
-            X_train, y_train = sm.fit_sample(X_train, y_train)
-        else:
-            print('All classes have greater than 100000 samples!')
+        # if all class numbers greater than 150000, reduce to 100000
+        
+
         all_data = {'X_train': X_train,
                     'y_train': y_train,
                     'X_valid': X_valid,
