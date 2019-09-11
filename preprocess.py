@@ -94,23 +94,20 @@ while all(l>0 for l in len_all): #& count_all<10:
                     spectra_class = pickle.load(open(os.path.join(paras['hyperpath'], 'raw_{}_{}.pkl'.format(file, classn)), 'rb'))
                     spectra_class = spectra_class[:,np.where(goodWvlengthFlag == 1)[0]]
                     label_class   = np.ones(np.shape(spectra_class)[0])*classn 
-#                    pdb.set_trace()
+
 #                    if idx+idx_c == 0:
 #                        spectra = spectra_class
 #                        gt      = label_class
 #                    else:
 #                        spectra = np.concatenate((spectra, spectra_class), axis = 0)
 #                        gt      = np.concatenate((gt, label_class), axis = 0)	
-                else:
-                    pdb.set_trace()
-                if idxf == 0:
-                    spectra_all[str(classn)] = spectra_class
-                    label_all[str(classn)] = label_class  
-                else:
+                try:
                     spectra_all[str(classn)] = np.concatenate((spectra_all[str(classn)], spectra_class), axis = 0) 
                     label_all[str(classn)]   = np.concatenate((label_all[str(classn)], label_class), axis = 0) 
-                  
-        
+                except:
+                    spectra_all[str(classn)] = spectra_class
+                    label_all[str(classn)] = label_class  
+
         paras['num_class'] = len(spectra_all)
         paras['inputsize'] = np.shape(spectra_class)[1]
         pdb.set_trace()
