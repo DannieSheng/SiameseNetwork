@@ -23,11 +23,12 @@ import pdb
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 parameters = {
-    'exp': '4',     
-    'hyperpath': r'T:\Results\AnalysisDroneData\dataPerClass\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06',
-    'flagpath': r'T:\Results\AnalysisDroneData\ReflectanceCube\MATdataCube\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06',
+    'exp': '0',     
+#    'hyperpath': 'T:/Results/AnalysisDroneData/dataPerClass/CLMB STND 2019 Flight Data/100081_2019_06_11_17_57_06',
+    'hyperpath': r'T:\AnalysisDroneData\dataPerClass\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06',
+    # 'flagpath': r'T:\Results\AnalysisDroneData\ReflectanceCube\MATdataCube\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06',
     'flagname': 'flagGoodWvlen.mat',
-    'labelpath': r'T:\Results\AnalysisDroneData\grounTruth\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06\gt_processed',
+    # 'labelpath': r'T:\Results\AnalysisDroneData\grounTruth\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06\gt_processed',)
     'use_gt':1,
     'use_all_class':1, # indicator of "all classes" method or "one-vs.-all"
     'end_dim': 30,
@@ -41,16 +42,24 @@ parameters = {
     'name_class': [1, 2, 3, 4, 5, 6],
     'momentum': 0.9,
     'grass_names': ['Liberty', 'Blackwell', 'Alamo', 'Kanlow', 'CIR', 'Carthage']}
-
+parameters['flagpath']      = parameters['hyperpath'].replace('dataPerClass', r'ReflectanceCube\MATdataCube')
+parameters['labelpath']     = parameters['hyperpath'].replace('dataPerClass', 'grounTruth')
+parameters['labelpath']     = parameters['labelpath'] + r'\gt_processed'
+parameters['savepath_data'] = parameters['hyperpath'].replace('dataPerClass', 'Siamese')
 if parameters['use_all_class'] == 1:
-    path = 'T:/Results/AnalysisDroneData/Siamese/CLMB STND 2019 Flight Data/100081_2019_06_11_17_57_06/usegt/use_all_classes/'
+#    path = parameters['savepath_data'] + '/usegt/use_all_classes/'
+    path = parameters['savepath_data'] + r'\use_all_classes'
 else:
-    path = 'T:/Results/AnalysisDroneData/Siamese/CLMB STND 2019 Flight Data/100081_2019_06_11_17_57_06/usegt/one_vs_all/'
+#    path = parameters['savepath_data'] + '/usegt/one_vs_all/'
+    path = parameters['savepath_data'] + r'\one_vs_all'
 if parameters['normalization'] == 1:
-    parameters['savepath'] =  path + 'normedSpectra/' + str(parameters['end_dim']) + '/exp' + parameters['exp']
+    parameters['savepath'] = path + r'normedSpectra\{}\exp{}'.format(parameters['end_dim'],parameters['exp'])
 else:
-    parameters['savepath'] =  path + str(parameters['end_dim']) + '/exp' + parameters['exp']
-
+    parameters['savepath'] = path + r'\{}\exp{}'.format(parameters['end_dim'], parameters['exp'])
+parameters['savepath_data'] = parameters['savepath_data'] + r'\data\exp{}'.format(parameters['exp'])
+if not os.path.exists(parameters['savepath_data']):
+    os.makedirs(parameters['savepath_data'])
+    
 if not os.path.exists(parameters['savepath']):
     os.makedirs(parameters['savepath'])
 
