@@ -29,15 +29,37 @@ import pdb
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+parameters = {
+    'hyperpath': r'T:\AnalysisDroneData\dataPerClass\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06',
+    'flagname': 'flagGoodWvlen.mat',
+    'use_all_class':1, # indicator of "all classes" method or "one-vs.-all"
+    'normalization': 0,
+    'name_class': [1, 2, 3, 4, 5, 6],
+    'momentum': 0.9,
+    'grass_names': ['Liberty', 'Blackwell', 'Alamo', 'Kanlow', 'CIR', 'Carthage']
+}
+parameters['flagpath']  = parameters['hyperpath'].replace('dataPerClass', r'ReflectanceCube\MATdataCube')
+parameters['labelpath'] = parameters['hyperpath'].replace('dataPerClass', 'grounTruth')
+parameters['labelpath'] = parameters['labelpath'] + r'\gt_processed'
+path_temp               = parameters['hyperpath'].replace('dataPerClass', 'Siamese')
+if parameters['use_all_class'] == 1:
+    path = path_temp + r'\use_all_classes'
+else:
+    path = path_temp + r'\one_vs_all'
+parameters['savepath_data'] = path + r'\data'
+parameters['savepath_para'] = path + r'\parameters'
 
-plt.close('all')
-paras = trainlib.parameters
+if not os.path.exists(parameters['savepath_data']):
+    os.makedirs(parameters['savepath_data'])
+if not os.path.exists(parameters['savepath_para']):
+    os.makedirs(parameters['savepath_para'])
+
+paras = parameters
 
 # extract list of files containing specific classes from the summary file
-df_summary = pd.read_csv(os.path.join(paras['labelpath'], 'summary.csv'), index_col = False,  encoding = 'Latin-1')
+df_summary        = pd.read_csv(os.path.join(paras['labelpath'], 'summary.csv'), index_col = False,  encoding = 'Latin-1')
 paras['filename'] = df_summary[df_summary.columns[0]].tolist()
 for classn in paras['name_class']:
-#    pdb.set_trace()
     idx                                = df_summary[df_summary['class {}'.format(classn)] >0].index
     paras['filename{}'.format(classn)] = [str(paras['filename'][i]) for i in idx]
     
@@ -52,9 +74,6 @@ flag             = sio.loadmat(os.path.join(paras['flagpath'], paras['flagname']
 goodWvlengthFlag = flag['flag']
 wavelength       = flag['wavelength']
 
-#     # patience for early stopping
-# patience = 30
-
     # fold for cross validation
 idx_fold  = 0
 count_all = 0
@@ -67,14 +86,14 @@ while all(l>0 for l in len_all): #& count_all<10:
         del gt
     except:
         pass
-    savepath_fold      =  paras['savepath']  + r'\fold' + str(idx_fold)
-    savepath_data_fold = paras['savepath_data']  + r'\fold' + str(idx_fold)
-    if not os.path.exists(savepath_fold):
-        os.makedirs(savepath_fold)     
+    # savepath_fold      = paras['savepath']  + r'\fold' + str(idx_fold)
+    savepath_data_fold = paras['savepath_data'] + r'\fold{}'.format(idx_fold)
+    savepath_para_fold = paras['savepath_para'] + r'\fold{}'.format(idx_fold)
     if not os.path.exists(savepath_data_fold):
         os.makedirs(savepath_data_fold)
-    
-    
+    if not os.path.exists(savepath_para_fold):
+        os.makedirs(savepath_para_fold)     
+
     count_all += 1
     len_all = []
     if not os.path.exists(os.path.join(savepath_data_fold, 'data.pkl')):
@@ -90,10 +109,8 @@ while all(l>0 for l in len_all): #& count_all<10:
             for f in selected_file:
                 list_file_all[str(classn)].remove(f)
                 paras['selected_file'].append(f)
-#            pdb.set_trace()
         for classn in paras['name_class']:
-            len_all.append(len(list_file_all[str(classn)]))    
-#        pdb.set_trace()
+            len_all.append(len(list_file_all[str(classn)]))
         spectra_all = {}
         label_all   = {}
         for (idxf, file) in enumerate(paras['selected_file']):
@@ -102,13 +119,6 @@ while all(l>0 for l in len_all): #& count_all<10:
                     spectra_class = pickle.load(open(os.path.join(paras['hyperpath'], 'raw_{}_{}.pkl'.format(file, classn)), 'rb'))
                     spectra_class = spectra_class[:,np.where(goodWvlengthFlag == 1)[0]]
                     label_class   = np.ones(np.shape(spectra_class)[0])*classn 
-
-#                    if idx+idx_c == 0:
-#                        spectra = spectra_class
-#                        gt      = label_class
-#                    else:
-#                        spectra = np.concatenate((spectra, spectra_class), axis = 0)
-#                        gt      = np.concatenate((gt, label_class), axis = 0)	
                     try:
                         spectra_all[str(classn)] = np.concatenate((spectra_all[str(classn)], spectra_class), axis = 0) 
                         label_all[str(classn)]   = np.concatenate((label_all[str(classn)], label_class), axis = 0) 
@@ -117,15 +127,15 @@ while all(l>0 for l in len_all): #& count_all<10:
                         label_all[str(classn)] = label_class 
 
         paras['num_class'] = len(spectra_all)
-        paras['inputsize'] = np.shape(spectra_class)[1]        
+        paras['inputsize'] = np.shape(spectra_class)[1]
         print('Data loading done!!')
         
                     # save parameters in a txt file and a pickle file 
-        with open(os.path.join(savepath_fold, 'parameters.txt'), 'w') as f:
+        with open(os.path.join(savepath_para_fold, 'parameters.txt'), 'w') as f:
             for key, value in paras.items():
                 f.write(key + ': ' + str(value) + '\n')
         f.close()
-        pickle.dump(paras, open(os.path.join(savepath_fold, 'parameters.pkl'), 'wb'))
+        pickle.dump(paras, open(os.path.join(savepath_para_fold, 'parameters.pkl'), 'wb'))
         
         # if class numbers greater than 150000, reduce to 150000
         for idx_c, classn in enumerate(paras['name_class']):

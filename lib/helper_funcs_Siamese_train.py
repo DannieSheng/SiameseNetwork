@@ -23,7 +23,7 @@ import pdb
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 parameters = {
-    'exp': '0',     
+    'exp': '1',     
 #    'hyperpath': 'T:/Results/AnalysisDroneData/dataPerClass/CLMB STND 2019 Flight Data/100081_2019_06_11_17_57_06',
     'hyperpath': r'T:\AnalysisDroneData\dataPerClass\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06',
     # 'flagpath': r'T:\Results\AnalysisDroneData\ReflectanceCube\MATdataCube\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06',
@@ -31,11 +31,11 @@ parameters = {
     # 'labelpath': r'T:\Results\AnalysisDroneData\grounTruth\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06\gt_processed',)
     'use_gt':1,
     'use_all_class':1, # indicator of "all classes" method or "one-vs.-all"
-    'end_dim': 30,
+    # 'end_dim': 30,
     'normalization': 0,
-    'train_batch_size': 128, # 16, 3, 13
-    'valid_batch_size': 64,
-    'train_num_epochs': 500,
+    # 'train_batch_size': 128, # 16, 3, 13
+    # 'valid_batch_size': 64,
+    # 'train_num_epochs': 500,
     'margin': 1.0,
     'thres_dist': 0.5,
     'learning_rate': 5e-4,
