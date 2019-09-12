@@ -393,7 +393,7 @@ class EarlyStopping:
 #            self.save_checkpoint(epoch, val_loss, model, end_dim)
             self.early_stop = False
         else:
-            pdb.set_trace()
+#            pdb.set_trace()
             regressor = LinearRegression()  
             regressor.fit(np.reshape(self.x, (-1,1)), self.y)
             self.score = regressor.coef_
