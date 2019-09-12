@@ -49,8 +49,13 @@ for idx_fold in range(0,8):
 
         # load pre-saved data
     all_data       = pickle.load(open(os.path.join(path_data_fold, 'data.pkl'), 'rb'))
-    X_train y_train, X_valid, y_valid, X_test, y_test = all_data['X_train'], all_data['y_train'], all_data['X_valid'], all_data['y_valid'], all_data['X_test'], all_data['y_test']
-
+#    X_train y_train, X_valid, y_valid, X_test, y_test = all_data['X_train'], all_data['y_train'], all_data['X_valid'], all_data['y_valid'], all_data['X_test'], all_data['y_test']
+    X_train = all_data['X_train']
+    y_train = all_data['y_train']
+    X_valid = all_data['X_valid']
+    y_valid = all_data['y_valid']
+    X_test = all_data['X_test']
+    y_test = all_data['y_test']
         # definition of early stopping
     early_stopping = trainlib.EarlyStopping(patience=patience, verbose=True)
 
@@ -102,7 +107,7 @@ for idx_fold in range(0,8):
     axs[1].set_xlabel('training epoch')
     axs[1].set_ylabel('accuracy')
     plt.suptitle('Learning curve')
-    plt.savefig(os.path.join(savepath_fold, '_train_hist_epoch.png'))
+    plt.savefig(os.path.join(path_fold, '_train_hist_epoch.png'))
     plt.show()
 
     ## test: transform all data at a time
