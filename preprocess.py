@@ -10,16 +10,10 @@ import os
 os.chdir('//ece-azare-nas1.ad.ufl.edu/ece-azare-nas/Profile/hdysheng/Documents/GitHub/SiameseNetwork')
 #import random
 import numpy as np
-from torch.utils.data import DataLoader
-import lib.helper_funcs_Siamese_train as trainlib
 # from lib.helper_funcs_Siamese_train import EarlyStopping
 import scipy.io as sio
 from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
 import pickle
-#from sklearn.metrics import roc_curve, auc
-# from lib.tools import EarlyStopping
-import lib.tools as tools
 import random
 from imblearn.over_sampling import SMOTE
 import pandas as pd
@@ -33,9 +27,7 @@ parameters = {
     'hyperpath': r'T:\AnalysisDroneData\dataPerClass\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06',
     'flagname': 'flagGoodWvlen.mat',
     'use_all_class':1, # indicator of "all classes" method or "one-vs.-all"
-    'normalization': 0,
     'name_class': [1, 2, 3, 4, 5, 6],
-    'momentum': 0.9,
     'grass_names': ['Liberty', 'Blackwell', 'Alamo', 'Kanlow', 'CIR', 'Carthage']
 }
 parameters['flagpath']  = parameters['hyperpath'].replace('dataPerClass', r'ReflectanceCube\MATdataCube')
@@ -86,7 +78,7 @@ while all(l>0 for l in len_all): #& count_all<10:
         del gt
     except:
         pass
-    # savepath_fold      = paras['savepath']  + r'\fold' + str(idx_fold)
+    pdb.set_trace()
     savepath_data_fold = paras['savepath_data'] + r'\fold{}'.format(idx_fold)
     savepath_para_fold = paras['savepath_para'] + r'\fold{}'.format(idx_fold)
     if not os.path.exists(savepath_data_fold):
