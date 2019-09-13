@@ -28,6 +28,7 @@ parameters = {
     'flagname': 'flagGoodWvlen.mat',
     'use_all_class':1, # indicator of "all classes" method or "one-vs.-all"
     'name_class': [1, 2, 3, 4, 5, 6],
+    'sample_per_class': 200000,
     'grass_names': ['Liberty', 'Blackwell', 'Alamo', 'Kanlow', 'CIR', 'Carthage']
 }
 parameters['flagpath']  = parameters['hyperpath'].replace('dataPerClass', r'ReflectanceCube\MATdataCube')
@@ -69,7 +70,7 @@ wavelength       = flag['wavelength']
     # fold for cross validation
 idx_fold  = 0
 count_all = 0
-while all(l>0 for l in len_all): #& count_all<10:
+while all(l>=2 for l in len_all): #& count_all<10:
     try:
         del spectra
     except:
@@ -78,7 +79,6 @@ while all(l>0 for l in len_all): #& count_all<10:
         del gt
     except:
         pass
-    pdb.set_trace()
     savepath_data_fold = paras['savepath_data'] + r'\fold{}'.format(idx_fold)
     savepath_para_fold = paras['savepath_para'] + r'\fold{}'.format(idx_fold)
     if not os.path.exists(savepath_data_fold):
@@ -91,7 +91,6 @@ while all(l>0 for l in len_all): #& count_all<10:
     if not os.path.exists(os.path.join(savepath_data_fold, 'data.pkl')):
         paras['selected_file'] = []
         for idx, classn in enumerate(paras['name_class']):
-#            pdb.set_trace()
             list_file = list_file_all[str(classn)]
             if idx >0:
                 list_file = list(set(list_file)-set(paras['selected_file'])) # if file has been selected before, regard the file for this time 
@@ -129,12 +128,12 @@ while all(l>0 for l in len_all): #& count_all<10:
         f.close()
         pickle.dump(paras, open(os.path.join(savepath_para_fold, 'parameters.pkl'), 'wb'))
         
-        # if class numbers greater than 150000, reduce to 150000
+        # if class numbers greater than paras['sample_per_class'], reduce to paras['sample_per_class']
         for idx_c, classn in enumerate(paras['name_class']):
             num_sample = len(label_all[str(classn)])
 #            pdb.set_trace()
-            if num_sample > 150000:
-                selected_id = np.array(random.sample(list(np.arange(0, num_sample)), 150000))
+            if num_sample > paras['sample_per_class']:
+                selected_id = np.array(random.sample(list(np.arange(0, num_sample)), paras['sample_per_class']))
                 selected_X  = spectra_all[str(classn)][selected_id,:]
                 selected_y  = label_all[str(classn)][selected_id]
             else:
@@ -146,7 +145,7 @@ while all(l>0 for l in len_all): #& count_all<10:
             except:
                 spectra = selected_X
                 gt      = selected_y
-        print('Downsampled those with more than 150000 samples!\n')  
+        print('Downsampled those with more than {} samples!\n'.format(paras['sample_per_class']))  
         
         # if there is one class with number smaller than 100000, upsampling
         v, count = np.unique(gt, return_counts = True)          
@@ -155,7 +154,7 @@ while all(l>0 for l in len_all): #& count_all<10:
             print('Oversampled those longer than 150000!\n')               
             X_train, y_train = sm.fit_sample(spectra, gt)
         else:
-            print('All classes have greater than 150000 samples!')
+            print('All classes have greater than {} samples!'.format(paras['sample_per_class']))
 
             ## train-test split
         X_train_all, X_test, y_train_all, y_test, idx_train, idx_test = train_test_split(spectra, gt, range(0, len(gt)), test_size = 0.1, random_state = 0)

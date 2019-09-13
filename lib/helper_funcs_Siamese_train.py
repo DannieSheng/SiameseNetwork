@@ -69,8 +69,8 @@ def run_classifier(classifier, k, outputs, labels, parameters, save_name, idx_fo
     pickle.dump(classifier, open(os.path.join(savepath_fold, 'classifier_'+str(idx_fold) + '.pkl'), 'wb'))
     labels_ = [parameters['grass_names'][int(i-1)] for i in labels]
     predicted_ = [parameters['grass_names'][int(i-1)] for i in predicted]
-    tools.plot_confu(labels_, predicted_, savepath_fold, 'knn_training') 
-    tools.ROC_classifier(parameters['name_class'], parameters['grass_names'], labels, prob, savepath_fold, 'knn_training')
+    tools.plot_confu(labels_, predicted_, savepath_fold, save_name) 
+    tools.ROC_classifier(parameters['name_class'], parameters['grass_names'], labels, prob, savepath_fold, save_name)
     return classifier
 
 def evaluate(d_loader, loss_temp, accu_temp, model, criterion, optimizer):
