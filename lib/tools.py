@@ -65,11 +65,14 @@ def evaluate_single(d_loader, model):
 
     return outputs_all, labels_all
 
-def plot_confu(labels, predicted, path_result, filename):
+def plot_confu(labels, predicted, path_result, filename, grass_names):
     
     confu = confusion_matrix(labels, predicted, labels=None, sample_weight=None)
     confu_percent = confu / confu.astype(np.float).sum(axis=1)
     df_cm = pd.DataFrame(confu_percent)
+    for (idx, n) in enumerate(grass_names):
+        df_cm = df_cm.rename(columns = {idx: n})
+        df_cm = df_cm.rename(index = {idx: n})
     
         # plot confusion matrix
     fig101, axs = plt.subplots(1,1)
@@ -91,17 +94,19 @@ def ROC_classifier(name_class, name_grass, labels, score, path_result, filename)
                  ''.format(name_grass[i-1], roc_auc[i-1]))
     plt.legend(loc="lower right")
     plt.title('ROC curves for classification result')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
     plt.savefig(os.path.join(path_result, 'ROC_' + filename + '.png'))
         
-def show_gt_output(idx_target, labels, predicted_, label_im, filename, path_result):
+def show_gt_output(idx_target, labels, predicted, label_im, filename, path_result):
                 ## show the output in image
     label_sorted  = labels[idx_target.argsort()]
     index_sorted  = idx_target[idx_target.argsort()]
-    predicted_sorted = predicted_[idx_target.argsort()]
+    predicted_sorted = predicted[idx_target.argsort()]
     predicted_sorted = np.expand_dims(predicted_sorted, axis = 1)
    
-    im_gt = np.reshape(np.zeros(np.shape(label_im)), (-1,1))
-    im_predicted = np.reshape(np.zeros(np.shape(label_im)), (-1,1))
+    im_gt                  = np.reshape(np.zeros(np.shape(label_im)), (-1,1))
+    im_predicted           = np.reshape(np.zeros(np.shape(label_im)), (-1,1))
     im_gt[index_sorted, :] =  label_sorted#np.expand_dims(label_sorted, axis = 1)
     im_predicted[index_sorted, :] =  predicted_sorted
     im_gt = np.reshape(im_gt, np.shape(label_im))
@@ -110,23 +115,15 @@ def show_gt_output(idx_target, labels, predicted_, label_im, filename, path_resu
     fig100, axs = plt.subplots(1,2)
     axs.ravel()
 
-    axs[0].imshow(im_gt)
+    im0 = axs[0].imshow(im_gt, vmin = 1, vmax = 6)
     axs[0].set_title('Ground truth image')
+    cb0 = fig100.colorbar(im0, ax = axs[0])
 
-    im = axs[1].imshow(im_predicted)
-    fig100.colorbar(im)
+    im1 = axs[1].imshow(im_predicted, vmin = 1, vmax = 6)
     axs[1].set_title('Predicted result image')
-
-    # fig100 = plt.figure()
-    # ax1 = fig100.add_subplot(1,2,1)
-    # plt.imshow(im_gt)
-    # plt.colorbar()
-    # plt.title('Ground truth image')
+    fig100.colorbar(im1, ax = axs[1])
+    cb0.remove()
     
-    # ax2 = fig100.add_subplot(1,2,2)
-    # plt.imshow(im_predicted)
-    # plt.colorbar()
-    # plt.title('Predicted result image')
     plt.savefig(os.path.join(path_result, filename + '_predicted_result_im.jpg'))
     
 def output_visualize(parameters, outputs_, labels_, filename, path_result):
@@ -137,6 +134,7 @@ def output_visualize(parameters, outputs_, labels_, filename, path_result):
         ax1 = fig1.add_subplot(1,1,1)
     color_code = ['r', 'g', 'b']
     count = 0
+    
     for i in parameters['name_class']:
         output_i = outputs_[np.where(labels_ == i)[0],:]
         if parameters['end_dim'] == 2:

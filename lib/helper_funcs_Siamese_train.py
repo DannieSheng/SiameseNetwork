@@ -23,55 +23,52 @@ import pdb
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 parameters = {
-    'exp': '1',     
-#    'hyperpath': 'T:/Results/AnalysisDroneData/dataPerClass/CLMB STND 2019 Flight Data/100081_2019_06_11_17_57_06',
-    'hyperpath': r'T:\AnalysisDroneData\dataPerClass\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06',
-    # 'flagpath': r'T:\Results\AnalysisDroneData\ReflectanceCube\MATdataCube\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06',
-    'flagname': 'flagGoodWvlen.mat',
-    # 'labelpath': r'T:\Results\AnalysisDroneData\grounTruth\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06\gt_processed',)
-    'use_gt':1,
-    'use_all_class':1, # indicator of "all classes" method or "one-vs.-all"
-    # 'end_dim': 30,
+    'exp': '1',
+    'end_dim': 30,
     'normalization': 0,
-    # 'train_batch_size': 128, # 16, 3, 13
-    # 'valid_batch_size': 64,
-    # 'train_num_epochs': 500,
+    'train_batch_size': 128, # 16, 3, 13
+    'valid_batch_size': 64,
+    'train_num_epochs': 500,
     'margin': 1.0,
     'thres_dist': 0.5,
     'learning_rate': 5e-4,
-    'name_class': [1, 2, 3, 4, 5, 6],
     'momentum': 0.9,
-    'grass_names': ['Liberty', 'Blackwell', 'Alamo', 'Kanlow', 'CIR', 'Carthage']}
-parameters['flagpath']      = parameters['hyperpath'].replace('dataPerClass', r'ReflectanceCube\MATdataCube')
-parameters['labelpath']     = parameters['hyperpath'].replace('dataPerClass', 'grounTruth')
-parameters['labelpath']     = parameters['labelpath'] + r'\gt_processed'
-parameters['savepath_data'] = parameters['hyperpath'].replace('dataPerClass', 'Siamese')
+    'hyperpath': r'T:\AnalysisDroneData\dataPerClass\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06',
+    'use_all_class':1, # indicator of "all classes" method or "one-vs.-all"
+    'early_stop_mtd': 1 #1: the one from internet, 2: the one created by my self
+    }
 if parameters['use_all_class'] == 1:
-#    path = parameters['savepath_data'] + '/usegt/use_all_classes/'
-    path = parameters['savepath_data'] + r'\use_all_classes'
+    parameters['path_all'] = parameters['hyperpath'].replace('dataPerClass', 'Siamese') + r'\use_all_class'
 else:
-#    path = parameters['savepath_data'] + '/usegt/one_vs_all/'
-    path = parameters['savepath_data'] + r'\one_vs_all'
-if parameters['normalization'] == 1:
-    parameters['savepath'] = path + r'normedSpectra\{}\exp{}'.format(parameters['end_dim'],parameters['exp'])
-else:
-    parameters['savepath'] = path + r'\{}\exp{}'.format(parameters['end_dim'], parameters['exp'])
-parameters['savepath_data'] = parameters['savepath_data'] + r'\data\exp{}'.format(parameters['exp'])
-if not os.path.exists(parameters['savepath_data']):
-    os.makedirs(parameters['savepath_data'])
-    
-if not os.path.exists(parameters['savepath']):
-    os.makedirs(parameters['savepath'])
+    pass
+
+
 
 def run_classifier(classifier, k, outputs, labels, parameters, save_name, idx_fold):
-    savepath_fold = parameters['savepath']  + '/fold' + str(idx_fold)
-    classifier, predicted, accuracy, prob = knn_on_output(k, outputs, labels, classifier, savepath_fold, save_name)
-    pickle.dump(classifier, open(os.path.join(savepath_fold, 'classifier_'+str(idx_fold) + '.pkl'), 'wb'))
+#    savepath_fold = parameters['savepath']  + '/fold' + str(idx_fold)
+    classifier, predicted, accuracy, prob = knn_on_output(k, outputs, labels, classifier, parameters['savepath_fold'], save_name)
+    if 'train' in save_name:
+        pickle.dump(classifier, open(os.path.join(parameters['savepath_fold'], 'classifier_'+str(idx_fold) + '.pkl'), 'wb'))
     labels_ = [parameters['grass_names'][int(i-1)] for i in labels]
     predicted_ = [parameters['grass_names'][int(i-1)] for i in predicted]
-    tools.plot_confu(labels_, predicted_, savepath_fold, save_name) 
-    tools.ROC_classifier(parameters['name_class'], parameters['grass_names'], labels, prob, savepath_fold, save_name)
+    tools.plot_confu(labels_, predicted_, parameters['savepath_fold'], save_name, parameters['grass_names']) 
+    tools.ROC_classifier(parameters['name_class'], parameters['grass_names'], labels, prob, parameters['savepath_fold'], save_name)
     return classifier
+
+def knn_on_output(k, outputs, labels, classifier = None, path_result = None, filename = None):
+    if classifier is None:
+        classifier = KNeighborsClassifier(n_neighbors = k)
+        classifier.fit(outputs, labels)
+    
+    predicted = classifier.predict(outputs)
+    prob      = classifier.predict_proba(outputs)
+
+    accuracy  = (predicted == labels).mean() 
+    
+    if (path_result is not None) and (filename is not None):
+        with open(os.path.join(path_result, 'accuracy_' + filename +'_' + str(k) + 'nn.txt'), 'w') as f:
+            f.write('test accuracy for file ' + filename + ': ' + str(accuracy) + '\n')
+    return classifier, predicted, accuracy, prob
 
 def evaluate(d_loader, loss_temp, accu_temp, model, criterion, optimizer):
     for idx_batch, (x0, x1, validlabels) in enumerate(d_loader):
@@ -144,7 +141,7 @@ def train(model, criterion, optimizer, parameters, train_loader, valid_loader, l
     model.load_state_dict(torch.load('./' + str(parameters['end_dim'])+'/checkpoint.pt'))
 
     # save the final model
-    torch.save(model.state_dict(), os.path.join(parameters['savepath'], '_model.pth'))
+    torch.save(model.state_dict(), os.path.join(parameters['savepath_fold'], '_model.pth'))
 
     return model, loss_all, accu_all
 
@@ -351,66 +348,5 @@ class SiameseNetwork(nn.Module):
         euclidean_distance = F.pairwise_distance(output1, output2)
         return euclidean_distance
     
-def knn_on_output(k, outputs, labels, classifier = None, path_result = None, filename = None):
-    if classifier is None:
-        classifier = KNeighborsClassifier(n_neighbors = k)
-        classifier.fit(outputs, labels)
-    
-    predicted = classifier.predict(outputs)
-    prob      = classifier.predict_proba(outputs)
 
-    accuracy  = (predicted == labels).mean() 
     
-    if (path_result is not None) and (filename is not None):
-        with open(os.path.join(path_result, 'accuracy_' + filename +'_' + str(k) + 'nn.txt'), 'w') as f:
-            f.write('test accuracy for file ' + filename + ': ' + str(accuracy) + '\n')
-    return classifier, predicted, accuracy, prob
-    
-class EarlyStopping:
-    """Early stops the training if validation loss doesn't improve after a given patience.
-    Using the slope of the fitted line as the measurement"""
-    def __init__(self, patience=7, verbose=False):
-        """
-        Args:
-            patience (int): How long to wait after last time validation loss improved.
-                            Default: 7
-            verbose (bool): If True, prints a message for each validation loss improvement. 
-                            Default: False
-        """
-        self.patience = patience
-        self.verbose = verbose
-        self.early_stop = False
-        self.thres   = 0.0001
-        self.y = np.zeros(patience)
-        self.score = np.Inf
-        self.count = 0
-        self.x = np.arange(0,patience)
-
-    def __call__(self, epoch, val_loss, model, end_dim):
-        if self.count < self.patience:
-            self.y[self.count] = val_loss
-            self.count += 1
-#            self.save_checkpoint(epoch, val_loss, model, end_dim)
-            self.early_stop = False
-        else:
-#            pdb.set_trace()
-            regressor = LinearRegression()  
-            regressor.fit(np.reshape(self.x, (-1,1)), self.y)
-            self.score = regressor.coef_
-            if self.score > -self.thres:
-                self.early_stop = True
-                print(f'EarlyStopping epoch: {epoch}')
-            else:
-                self.early_stop = False
-                self.save_checkpoint(epoch, val_loss, model, end_dim)
-                self.count = 0
-            
-
-    def save_checkpoint(self, epoch, val_loss, model, end_dim):
-        '''Saves model when validation loss decrease.'''
-        if self.verbose:
-            print('Saving model ...')
-#            print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
-        if not os.path.exists('./' + str(end_dim)):
-            os.makedirs('./' + str(end_dim))
-        torch.save(model.state_dict(), './' + str(end_dim)+'/checkpoint.pt')

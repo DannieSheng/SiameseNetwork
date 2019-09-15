@@ -11,6 +11,7 @@ Parameters and helper functions for applying trained Siamese Network on new data
 import torch.nn as nn
 import torch.nn.functional as F
 from sklearn.neighbors import KNeighborsClassifier
+import os
 
 
     ### helper functions
@@ -54,21 +55,21 @@ class SiameseNetwork(nn.Module):
         output = self.dropout(output)
         output = self.fc4(output)
         
-        output = self.activation(output)
-        output = self.dropout(output)
-        output = self.fc5(output)
+        # output = self.activation(output)
+        # output = self.dropout(output)
+        # output = self.fc5(output)
         
-        output = self.activation(output)
-        output = self.dropout(output)
-        output = self.fc6(output)
+        # output = self.activation(output)
+        # output = self.dropout(output)
+        # output = self.fc6(output)
         
-        output = self.activation(output)
-        output = self.dropout(output)
-        output = self.fc7(output)
+        # output = self.activation(output)
+        # output = self.dropout(output)
+        # output = self.fc7(output)
     
-        output = self.activation(output)
-        output = self.dropout(output)
-        output = self.fc8(output)
+        # output = self.activation(output)
+        # output = self.dropout(output)
+        # output = self.fc8(output)
         
         return output
     
