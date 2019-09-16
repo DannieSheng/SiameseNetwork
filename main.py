@@ -21,7 +21,7 @@ import lib.tools as tools
 import pdb
 
 
-device     = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device    = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 paras_exp = trainlib.parameters # parameters for Siamese network
 
@@ -43,6 +43,8 @@ for idx_fold in range(0,8):
         os.makedirs(path_save_fold)
         
     parameters['savepath_fold'] = path_save_fold
+    
+    pdb.set_trace()
             
                     # save parameters in a txt file and a pickle file 
     with open(os.path.join(path_save_fold, 'parameters.txt'), 'w') as f:
@@ -76,7 +78,7 @@ for idx_fold in range(0,8):
 
         # loss function
     criterion = trainlib.ConstrastiveLoss()
-
+    pdb.set_trace()
     if torch.cuda.is_available():
         model.to(device)
         criterion.to(device)

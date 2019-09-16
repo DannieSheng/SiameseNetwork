@@ -12,7 +12,7 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset
 from sklearn.neighbors import KNeighborsClassifier
 import os
-os.chdir('//ece-azare-nas1.ad.ufl.edu/ece-azare-nas/Profile/hdysheng/Documents/GitHub/SiameseNetwork')
+os.chdir(r'\\ece-azare-nas1.ad.ufl.edu\ece-azare-nas\Profile\hdysheng\Documents\GitHub\SiameseNetwork')
 
 from sklearn.linear_model import LinearRegression
 import pickle
@@ -33,7 +33,7 @@ parameters = {
     'thres_dist': 0.5,
     'learning_rate': 5e-4,
     'momentum': 0.9,
-    'hyperpath': r'T:\AnalysisDroneData\dataPerClass\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06',
+    'hyperpath': r'T:\AnalysisDroneData\dataPerClass\CLMB STND 2019 Flight Data\100085_2019_07_18_15_54_58',
     'use_all_class':1, # indicator of "all classes" method or "one-vs.-all"
     'early_stop_mtd': 1 #1: the one from internet, 2: the one created by my self
     }
@@ -42,10 +42,7 @@ if parameters['use_all_class'] == 1:
 else:
     pass
 
-
-
 def run_classifier(classifier, k, outputs, labels, parameters, save_name, idx_fold):
-#    savepath_fold = parameters['savepath']  + '/fold' + str(idx_fold)
     classifier, predicted, accuracy, prob = knn_on_output(k, outputs, labels, classifier, parameters['savepath_fold'], save_name)
     if 'train' in save_name:
         pickle.dump(classifier, open(os.path.join(parameters['savepath_fold'], 'classifier_'+str(idx_fold) + '.pkl'), 'wb'))
