@@ -59,7 +59,7 @@ def knn_on_output(k, outputs, labels, classifier = None, path_result = None, fil
     if classifier is None:
         classifier = KNeighborsClassifier(n_neighbors = k)
         classifier.fit(outputs, labels)
-    
+    pdb.set_trace()
     predicted = classifier.predict(outputs)
     prob      = classifier.predict_proba(outputs)
 

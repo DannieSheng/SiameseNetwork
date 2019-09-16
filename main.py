@@ -8,7 +8,7 @@ Reference:
 """
 import torch
 import os
-os.chdir('//ece-azare-nas1.ad.ufl.edu/ece-azare-nas/Profile/hdysheng/Documents/GitHub/SiameseNetwork')
+os.chdir(r'\\ece-azare-nas1.ad.ufl.edu\ece-azare-nas\Profile\hdysheng\Documents\GitHub\SiameseNetwork')
 #import random
 from torch.utils.data import DataLoader
 import lib.helper_funcs_Siamese_train as trainlib
