@@ -44,9 +44,8 @@ def compute_accuracy(y_true, y_pred, thres):
 #    plt.show() 
 
 def evaluate_single(d_loader, model):
-#    outputs_all = []
-#    labels_all  = []
-    for idx_batch, (inputs, labels) in enumerate(d_loader):        
+
+    for idx_batch, (inputs, labels) in enumerate(d_loader):
         labels  = labels.float()
         if torch.cuda.is_available():
             labels  = labels.to(device)

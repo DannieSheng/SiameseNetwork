@@ -36,17 +36,17 @@ list_file = np.unique(list_file_all)
 
 for f in list_file:
     filename = str(f)
-    
+
     # load hyperspectral images
     data     = hdf5storage.loadmat(os.path.join(hyperimpath, 'raw_{}_rd_rf.mat'.format(filename)))
     hyper_im = data['data']
     hyper_im = hyper_im[:,:,np.where(goodWvlengthFlag == 1)[0]]
     label    = sio.loadmat(os.path.join(labelpath, 'ground_truth_{}.mat'.format(filename)))    
-    
+
     map_target = np.zeros(np.shape(label['gt_final']), dtype = int)
     for i in range(0,6):
         map_target[np.where(label['gt_final'] == i)] = 1
-        
+
     hyper_im = hyper_im*map_target[:,:,None]
     label_im = label['gt_final']*map_target
     
@@ -56,10 +56,10 @@ for f in list_file:
     idx_ntarget  = np.where(gt == 0)[0]
     spectra = np.delete(spectra, idx_ntarget, 0)
     gt      = np.delete(gt, idx_ntarget, 0)
-	    
+
     idx_all = np.array(range(0, np.shape(label_im)[0]*np.shape(label_im)[1]))
     idx_target = np.setdiff1d(idx_all, idx_ntarget)
-        
+
     test_data = {'spectra': spectra,
                  'gt': gt,
                  'idx_target': idx_target,

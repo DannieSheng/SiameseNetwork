@@ -36,7 +36,7 @@ parameters['labelpath'] = parameters['hyperpath'].replace('dataPerClass', 'groun
 parameters['labelpath'] = parameters['labelpath'] + r'\gt_processed'
 path_temp               = parameters['hyperpath'].replace('dataPerClass', 'Siamese')
 if parameters['use_all_class'] == 1:
-    path = path_temp + r'\use_all_classes'
+    path = path_temp + r'\use_all_class'
 else:
     path = path_temp + r'\one_vs_all'
 parameters['savepath_data'] = path + r'\data'

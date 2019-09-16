@@ -85,19 +85,14 @@ class SiameseNetwork(nn.Module):
         return euclidean_distance
 
 
-def knn_on_output(k, outputs, labels, classifier = None, path_result = None, filename = None):
-    if classifier is None:
-        classifier = KNeighborsClassifier(n_neighbors = k)
-        classifier.fit(outputs, labels)
-    
-    predicted = classifier.predict(outputs)
-    prob      = classifier.predict_proba(outputs)
+# def knn_on_output(k, outputs, labels, classifier, path_result = None, filename = None):
 
-    accuracy  = (predicted == labels).mean() 
-    
-    if (path_result is not None) and (filename is not None):
-        with open(os.path.join(path_result, 'accuracy_' + filename +'_' + str(k) + 'nn.txt'), 'w') as f:
-            f.write('test accuracy for file ' + filename + ': ' + str(accuracy) + '\n')
-    return classifier, predicted, accuracy, prob
+#     predicted = classifier.predict(outputs)
+#     prob      = classifier.predict_proba(outputs)
 
+#     accuracy  = (predicted == labels).mean() 
     
+#     if (path_result is not None) and (filename is not None):
+#         with open(os.path.join(path_result, 'accuracy_' + filename +'_' + str(k) + 'nn.txt'), 'w') as f:
+#             f.write('test accuracy for file ' + filename + ': ' + str(accuracy) + '\n')
+#     return predicted, accuracy, prob
