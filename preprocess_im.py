@@ -13,12 +13,14 @@ import pickle
 import re
 import pdb
 
-# list_file = [2000 4471 6471 8925 10925 13379 15379 17764 19764 21764 22252 24252 26791 28791 30791 31262 33262 35648 37648 39648 40102 42102 44573 46573 48573 49061 51061]
-hyperpath   = r'T:\AnalysisDroneData\dataPerClass\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06'
-hyperimpath = r'T:\AnalysisDroneData\ReflectanceCube\MATdataCube\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06'
-labelpath   = r'T:\AnalysisDroneData\grounTruth\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06\gt_processed'
+datapath    = r'T:\Box2\Drone Flight Data and Reference Files\Flight Data - All Sites\CLMB STND 2019 Flight Data\100085_2019_07_18_15_54_58'
+hyperpath   = datapath.replace(r'Box2\Drone Flight Data and Reference Files\Flight Data - All Sites', r'AnalysisDroneData\dataPerClass')
+hyperpath   = r'T:\AnalysisDroneData\dataPerClass\CLMB STND 2019 Flight Data\100085_2019_07_18_15_54_58'
+hyperimpath = hyperpath.replace('dataPerClass', r'ReflectanceCube\MATdataCube')
+labelpath   = hyperpath.replace('dataPerClass', 'groundTruth')
+labelpath   = r'{}\gt_processed'.format(labelpath)
 
-savepath    = r'T:\AnalysisDroneData\Siamese\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06\use_all_class\testdata'
+savepath    = hyperpath.replace('dataPerClass', 'Siamese')
 if not os.path.exists(savepath):
     os.makedirs(savepath)
 
@@ -31,10 +33,6 @@ for f in list_temp:
     cube_name = re.findall('\d+', f)[0]
     list_file_all.append(int(cube_name))
 list_file = np.unique(list_file_all)
-#index_temp = np.argsort(list_file_all)
-# list_file      = [list_file[i] for i in index_temp]
-# list_file_temp = [list_file_temp[i] for i in index_temp]
-# list_file = [list_file[i] for i in [0, 3, 4, 11, 15]]
 
 for f in list_file:
     filename = str(f)
@@ -67,7 +65,3 @@ for f in list_file:
                  'idx_target': idx_target,
                  'label_im': label_im}
     pickle.dump(test_data, open(os.path.join(savepath, 'test_data_{}.pkl'.format(filename)), 'wb'))
-#    pdb.set_trace()
-    
-    
-    
