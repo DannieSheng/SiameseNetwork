@@ -63,7 +63,6 @@ for idx_fold in range(0, NUMFOLD):
         
         with torch.no_grad():
             outputs_, labels_ = tools.evaluate_single(data_loader, model)
-
         output_tosave = {
                 'output': outputs_,
                 'label': labels_,

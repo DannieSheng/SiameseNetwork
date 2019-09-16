@@ -46,7 +46,7 @@ for idx_fold in range(0,8):
     
     pdb.set_trace()
             
-                    # save parameters in a txt file and a pickle file 
+        # save parameters in a txt file and a pickle file 
     with open(os.path.join(path_save_fold, 'parameters.txt'), 'w') as f:
         for key, value in parameters.items():
             f.write(key + ': ' + str(value) + '\n')

@@ -56,9 +56,10 @@ def knn_on_output(k, outputs, labels, classifier = None, path_result = None, fil
     if classifier is None:
         classifier = KNeighborsClassifier(n_neighbors = k)
         classifier.fit(outputs, labels)
-    pdb.set_trace()
-    predicted = classifier.predict(outputs)
     prob      = classifier.predict_proba(outputs)
+#    predicted = classifier.predict(outputs)
+
+    predicted = np.argmax(prob, axis = 1) + 1
 
     accuracy  = (predicted == labels).mean() 
     
@@ -71,11 +72,12 @@ def evaluate(d_loader, loss_temp, accu_temp, model, criterion, optimizer):
     for idx_batch, (x0, x1, validlabels) in enumerate(d_loader):
         validlabels = validlabels.float()
         if torch.cuda.is_available():
-            validlabels = validlabels.to(device)            
+            validlabels = validlabels.to(device)       
+            model.to(device)
             x0 = x0.to(device)
             x1 = x1.to(device)            
         outputs0, outputs1 = model(x0, x1)
-        distances_valid     = model.predict(outputs0, outputs1)
+        distances_valid    = model.predict(outputs0, outputs1)
         loss_temp.append(criterion(outputs0, outputs1, validlabels).detach().cpu().numpy())
         accu_temp.append(tools.compute_accuracy(validlabels.detach().cpu().numpy(), distances_valid.detach().cpu().numpy(), parameters['thres_dist']))
     loss_epoch = np.average(loss_temp)
