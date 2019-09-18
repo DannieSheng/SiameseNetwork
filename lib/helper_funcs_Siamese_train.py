@@ -12,12 +12,16 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset
 from sklearn.neighbors import KNeighborsClassifier
 import os
-os.chdir(r'\\ece-azare-nas1.ad.ufl.edu\ece-azare-nas\Profile\hdysheng\Documents\GitHub\SiameseNetwork')
+os.chdir(r'\\ece-azare-nas1.ad.ufl.edu\ece-azare-nas\Profile\hdysheng\Desktop\SiameseTestTemp')
 
 from sklearn.linear_model import LinearRegression
 import pickle
 import lib.tools as tools
 from torch.nn.utils import clip_grad_norm_
+
+import scipy.sparse as sp
+from joblib import Parallel, delayed, cpu_count
+
 import pdb
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -52,11 +56,26 @@ def run_classifier(classifier, k, outputs, labels, parameters, save_name, idx_fo
     tools.ROC_classifier(parameters['name_class'], parameters['grass_names'], labels, prob, parameters['savepath_fold'], save_name)
     return classifier
 
+def _predict(estimator, X, method, start, stop):
+    return getattr(estimator, method)(X[start:stop])
+def parallel_predict(estimator, X, n_jobs=1, method='predict_proba', batches_per_job=3):
+    n_jobs = max(cpu_count() + 1 + n_jobs, 1)  # XXX: this should really be done by joblib
+    n_batches  = batches_per_job * n_jobs
+    n_samples = len(X)
+    batch_size = int(np.ceil(n_samples / n_batches))
+    parallel = Parallel(n_jobs=n_jobs)
+    results = parallel(delayed(_predict)(estimator, X, method, i, i + batch_size)
+                       for i in range(0, n_samples, batch_size))
+    if sp.issparse(results[0]):
+        return sp.vstack(results)
+    return np.concatenate(results)
+
 def knn_on_output(k, outputs, labels, classifier = None, path_result = None, filename = None):
     if classifier is None:
         classifier = KNeighborsClassifier(n_neighbors = k)
         classifier.fit(outputs, labels)
-    prob      = classifier.predict_proba(outputs)
+    # prob      = classifier.predict_proba(outputs)
+    prob = parallel_predict(classifier, outputs, n_jobs=1, method='predict_proba', batches_per_job=100)
 #    predicted = classifier.predict(outputs)
 
     predicted = np.argmax(prob, axis = 1) + 1
