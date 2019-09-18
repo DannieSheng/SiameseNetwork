@@ -6,7 +6,7 @@ Script for applying trained Simese model on new data
 """
 
 import os
-os.chdir(r'\\ece-azare-nas1.ad.ufl.edu\ece-azare-nas\Profile\hdysheng\Documents\GitHub\SiameseNetwork') # set work directory
+os.chdir(r'\\ece-azare-nas1.ad.ufl.edu\ece-azare-nas\Profile\hdysheng\Desktop\SiameseTestTemp') # set work directory
 
 import lib.helper_funcs_Siamese_train as trainlib
 import lib.helper_funcs_Siamese_test as testlib
@@ -46,7 +46,7 @@ for idx_fold in range(0, NUMFOLD):
     f.close()
 
     ## loop over all files
-    for f in list_file:
+    for f in list_file[1:]:
         plt.close('all')
         filename = re.findall('\d+',f)[0]
 
@@ -67,7 +67,7 @@ for idx_fold in range(0, NUMFOLD):
                 'output': outputs_,
                 'label': labels_,
                 'index_in_im': idx_target}
-    
+
         classifier, output_tosave['predicted'], output_tosave['accuracy'], prob = trainlib.knn_on_output(5, np.nan_to_num(outputs_), np.squeeze(labels_, axis = 1), classifier, path_fold, filename)
 
         f = open(os.path.join(path_fold, filename+'_results.pkl'), 'wb')
@@ -84,7 +84,7 @@ for idx_fold in range(0, NUMFOLD):
 #        tools.output_visualize(parameters, output_tosave['output'], output_tosave['label'], filename, test_savepath)
         print(filename + ' done!!')
         print('==================================================================')
-        pdb.set_trace()
+
         try:
             label_all = np.concatenate((label_all, labels_), axis = 0)
             prob_all = np.concatenate((prob_all, prob), axis = 0)
@@ -95,7 +95,7 @@ for idx_fold in range(0, NUMFOLD):
             predicted_all = output_tosave['predicted']
 
          ## plot overall ROC curves on classification result for all test data
-    tools.ROC_classifier(parameters['name_class'], np.squeeze(label_all, axis = 1), prob_all, path_fold, 'overall_knn')
+    tools.ROC_classifier(parameters['name_class'], parameters['grass_names'], np.squeeze(label_all, axis = 1), prob_all, path_fold, 'overall_knn')
     
         ## plot overall confusion matrix
     tools.plot_confu(np.squeeze(label_all, axis = 1), predicted_all, path_fold, 'overall', parameters['grass_names']) 

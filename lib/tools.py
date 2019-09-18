@@ -125,16 +125,18 @@ def show_gt_output(idx_target, labels, predicted, label_im, filename, path_resul
     fig100, axs = plt.subplots(1,2)
     axs.ravel()
 
-    im0 = axs[0].imshow(im_gt, vmin = 1, vmax = 6)
+    im0 = axs[0].imshow(im_gt, vmin = 0, vmax = 6)
     axs[0].set_title('Ground truth image')
+    axs[0].axis('off')
     cb0 = fig100.colorbar(im0, ax = axs[0])
 
-    im1 = axs[1].imshow(im_predicted, vmin = 1, vmax = 6)
+    im1 = axs[1].imshow(im_predicted, vmin = 0, vmax = 6)
     axs[1].set_title('Predicted result image')
+    axs[1].axis('off')
     fig100.colorbar(im1, ax = axs[1])
     cb0.remove()
     
-    plt.savefig(os.path.join(path_result, filename + '_predicted_result_im.jpg'))
+    plt.savefig(os.path.join(path_result, filename + '_predicted_result_im.png'))
     
 def output_visualize(parameters, outputs_, labels_, filename, path_result):
     fig1 = plt.figure()
@@ -164,5 +166,5 @@ def output_visualize(parameters, outputs_, labels_, filename, path_result):
             count += 1
     ax1.legend()
     plt.title('Visualization of dimensionality reduction rusult')
-    plt.savefig(os.path.join(path_result, filename + '_visualization.jpg'))
+    plt.savefig(os.path.join(path_result, filename + '_visualization.png'))
     

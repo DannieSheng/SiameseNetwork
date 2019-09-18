@@ -11,7 +11,7 @@ import numpy as np
 import os
 import pickle
 
-hyperpath = r'T:\AnalysisDroneData\ReflectanceCube\MATdataCube\CLMB STND 2019 Flight Data\100085_2019_07_18_15_54_58'
+hyperpath = r'T:\AnalysisDroneData\ReflectanceCube\MATdataCube\CLMB STND 2019 Flight Data\100084_2019_06_25_16_39_57'
 
 savepath = hyperpath.replace('ReflectanceCube\MATdataCube', 'dataPerClass')
 if not os.path.exists(savepath):

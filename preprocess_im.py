@@ -13,16 +13,17 @@ import pickle
 import re
 import pdb
 
-datapath    = r'T:\Box2\Drone Flight Data and Reference Files\Flight Data - All Sites\CLMB STND 2019 Flight Data\100085_2019_07_18_15_54_58'
+datapath    = r'T:\Box2\Drone Flight Data and Reference Files\Flight Data - All Sites\CLMB STND 2019 Flight Data\100081_2019_06_11_17_57_06'
 hyperpath   = datapath.replace(r'Box2\Drone Flight Data and Reference Files\Flight Data - All Sites', r'AnalysisDroneData\dataPerClass')
-hyperpath   = r'T:\AnalysisDroneData\dataPerClass\CLMB STND 2019 Flight Data\100085_2019_07_18_15_54_58'
 hyperimpath = hyperpath.replace('dataPerClass', r'ReflectanceCube\MATdataCube')
 labelpath   = hyperpath.replace('dataPerClass', 'groundTruth')
 labelpath   = r'{}\gt_processed'.format(labelpath)
 
 savepath    = hyperpath.replace('dataPerClass', 'Siamese')
+savepath    = r'{}\testdata'.format(savepath)
 if not os.path.exists(savepath):
     os.makedirs(savepath)
+pdb.set_trace()   
 
 flag             = sio.loadmat(os.path.join(hyperimpath, 'flagGoodWvlen.mat'), squeeze_me = True)
 goodWvlengthFlag = flag['flag']
@@ -44,7 +45,7 @@ for f in list_file:
     label    = sio.loadmat(os.path.join(labelpath, 'ground_truth_{}.mat'.format(filename)))    
 
     map_target = np.zeros(np.shape(label['gt_final']), dtype = int)
-    for i in range(0,6):
+    for i in range(1,7):
         map_target[np.where(label['gt_final'] == i)] = 1
 
     hyper_im = hyper_im*map_target[:,:,None]
@@ -65,3 +66,5 @@ for f in list_file:
                  'idx_target': idx_target,
                  'label_im': label_im}
     pickle.dump(test_data, open(os.path.join(savepath, 'test_data_{}.pkl'.format(filename)), 'wb'))
+
+    

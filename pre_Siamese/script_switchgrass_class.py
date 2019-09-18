@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import re
 
-gt_path = r'T:\AnalysisDroneData\groundTruth\CLMB STND 2019 Flight Data\100085_2019_07_18_15_54_58\gt_processed'
+gt_path = r'T:\AnalysisDroneData\groundTruth\CLMB STND 2019 Flight Data\100084_2019_06_25_16_39_57\gt_processed'
 filelist = [f for f in os.listdir(os.path.join(gt_path)) if f.endswith('.mat')]
 
 # get the correct order of files
