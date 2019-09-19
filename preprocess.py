@@ -24,7 +24,7 @@ import pdb
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 parameters = {
-    'hyperpath': r'T:\AnalysisDroneData\dataPerClass\CLMB STND 2019 Flight Data\100085_2019_07_18_15_54_58',
+    'hyperpath': r'T:\AnalysisDroneData\dataPerClass\CLMB STND 2019 Flight Data\100084_2019_06_25_16_39_57',
     'flagname': 'flagGoodWvlen.mat',
     'use_all_class':1, # indicator of "all classes" method or "one-vs.-all"
     'name_class': [1, 2, 3, 4, 5, 6],
@@ -151,7 +151,7 @@ while all(l>=2 for l in len_all): #& count_all<10:
     v, count = np.unique(gt, return_counts = True)          
     if len(np.where(count < paras['sample_per_class'])[0])>0:
         sm = SMOTE(sampling_strategy = 'not majority', random_state = 2, n_jobs = 16)
-        print('Oversampled those longer than {}}!\n'.format(paras['sample_per_class']))               
+        print('Oversampled those less than {}!\n'.format(paras['sample_per_class']))               
         X_train, y_train = sm.fit_sample(spectra, gt)
     else:
         print('All classes have greater than {} samples!'.format(paras['sample_per_class']))
