@@ -8,18 +8,16 @@ Reference:
 """
 import torch
 import os
-os.chdir(r'\\ece-azare-nas1.ad.ufl.edu\ece-azare-nas\Profile\hdysheng\Documents\GitHub\SiameseNetwork')
+os.chdir('//ece-azare-nas1.ad.ufl.edu/ece-azare-nas/Profile/dysheng/Documents/GitHub/SiameseNetwork/')
 #import random
 from torch.utils.data import DataLoader
-import lib.helper_funcs_Siamese_train as trainlib
+import lib.helper_funcs_train as trainlib
 import matplotlib.pyplot as plt
 import pickle
-#from sklearn.metrics import roc_curve, auc
 import lib.earlystop as es
 import lib.tools as tools
 
 import pdb
-
 
 device    = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -113,7 +111,7 @@ for idx_fold in range(0,8):
         axs[0].plot(range(1, len(loss_all[tv])+1), loss_all[tv])
         axs[1].plot(range(1, len(accu_all[tv])+1), accu_all[tv], label = lb)
     axs[0].axvline(minposs, linestyle = '--', color = 'r', label = 'Early Stopping Checkpoint')
-    axs[1].legend(loc = 'best')
+    axs[0].legend(loc = 'best')
     axs[0].set_title('loss history')
     axs[0].set_xlabel('training epoch')
     axs[0].set_ylabel('loss')
@@ -153,11 +151,6 @@ for idx_fold in range(0,8):
     classifier = trainlib.run_classifier(classifier, 5, outputs_train, labels_train, parameters, 'knn_train', idx_fold)
     _          = trainlib.run_classifier(classifier, 5, outputs_valid, labels_valid, parameters, 'knn_valid', idx_fold)
     _          = trainlib.run_classifier(classifier, 5, outputs_test, labels_test, parameters, 'knn_test', idx_fold)
-
-    # classifier, predicted_vali0, accuracy_vali0, prob_vali0 = trainlib.knn_on_output(5, outputs_vali0, labels_vali0.ravel(), classifier, savepath_fold, 'knn_valiROC_accuracy')
-    # labels_vali0_ = [parameters['grass_names'][i] for i in labels_vali0]
-    # tools.plot_confu(labels_vali0_, predicted_vali0, savepath_fold, 'knn_valiROC') 
-    # tools.ROC_classifier(parameters['name_class'], parameters['grass_names'], labels_vali0.ravel(), prob_vali0, savepath_fold, 'knn_valiROC')
 
     ## ROC curves on classification result
     idx_fold += 1
