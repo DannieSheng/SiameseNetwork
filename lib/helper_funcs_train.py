@@ -12,7 +12,6 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset
 from sklearn.neighbors import KNeighborsClassifier
 import os
-os.chdir(r'\\ece-azare-nas1.ad.ufl.edu\ece-azare-nas\Profile\hdysheng\Desktop\SiameseTestTemp')
 
 from sklearn.linear_model import LinearRegression
 import pickle
